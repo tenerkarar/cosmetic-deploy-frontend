@@ -23,19 +23,6 @@ const ServiceCardDisplay: React.FC<IServiceCardDisplay> = (props) => {
                 {props.children}
             </p>
 
-            <Button title={'More'}></Button>
-
-            {/* <div style={{
-                position: 'absolute',
-                WebkitFilter: 'opacity(.4) saturate(2)',
-                backgroundImage: `url(${props.image})`,
-                backgroundSize: 'cover',
-                width: '224px',
-                height: '300px',
-                zIndex: 2
-            }}>
-
-            </div> */}
         </div>
     )
 }
