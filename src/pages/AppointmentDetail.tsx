@@ -12,7 +12,6 @@ import { FaPlusCircle, FaRegWindowClose } from 'react-icons/fa';
 import * as Modal from 'react-modal';
 import { Formik, Form } from 'formik';
 import Button from '../components/Button';
-import Input from '../components/Input';
 import InputAs from '../components/InputAs';
 
 import * as Yup from 'yup';
@@ -25,13 +24,14 @@ type rs = { price: number; points: number }
 
 const AppointmentDetail = () => {
 
+    Modal.setAppElement('#root');
+
     const urlParams = useParams();
     const queryClient = useQueryClient();
-    Modal.setAppElement('#root');
+
 
     const [results, setResults] = useState<rs>({ points: 0, price: 0 });
     const [serviceList, setServiceList] = useState<IService[]>([]);
-    //@ts-ignore
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
     const addServiceMutation = useMutation(async (id: number) => await axiosHttpClient.post(`/service/${urlParams.id}`,
@@ -112,9 +112,57 @@ const AppointmentDetail = () => {
 
                     <div className='bg-slate-100 p-6'>
 
-                        <div>You can add a service to this appointment below</div>
+                        <div>Please select a service to add to this appointment</div>
                         <div className="flex flex-col w-full content-center justify-center">
-                            <FaPlusCircle size={76} className={"text-slate-600 hover:text-slate-800 transition-all duration-300 self-center cursor-pointer"} onClick={() => setIsModalOpen(!isModalOpen)} />
+  
+                                  {/* Modal start */}
+            <>
+
+<Formik
+    initialValues={initialValues}
+    validationSchema={formSchema}
+    onSubmit={async (values) => {
+        addServiceMutation.mutateAsync(Number(values.serviceLoad));
+        setTimeout(() => {
+            setIsModalOpen(false);
+        }, 500);
+
+    }}
+>
+
+    {({ errors, touched }) => (
+
+        <Form>
+            <div>Available Services</div>
+
+            <InputAs
+                as={'select'}
+                name={'serviceLoad'}
+                errMessage={errors.serviceLoad}
+                error={errors.serviceLoad}
+                touch={errors.serviceLoad}
+            >
+                <option selected disabled></option>
+
+                {
+                    serviceList.map((serviceItem: IService) => <option
+                        key={serviceItem.service_id}
+                        value={serviceItem.service_id}> {serviceItem.name} | ${serviceItem.price}
+                    </option>)
+                }
+
+            </InputAs>
+
+                                            
+            <Button title={'Save'} type={'submit'} className={'w-full'} />
+
+        </Form>
+    )}
+</Formik>
+
+{/* formik ends */}
+</>
+{/* Modal end */}
                         </div>
 
                     </div>
@@ -149,87 +197,6 @@ const AppointmentDetail = () => {
             </main>
 
             <Footer />
-
-
-            {/* Modal start */}
-            <Modal
-                isOpen={isModalOpen}
-                style={{
-                    overlay: {
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: 'rgba(0, 0, 0, 0.75)'
-                    },
-                    content: {
-                        position: 'relative',
-                        width: '500px',
-                        left: '-4px',
-                        minHeight: '300px',
-                        height: 'auto',
-                        background: '#fff',
-                        overflow: 'auto',
-                        WebkitOverflowScrolling: 'touch',
-                        borderRadius: '4px',
-                        outline: 'none',
-                        padding: '20px',
-                        textAlign: 'center'
-                    }
-                }}
-            >
-
-                <FaPlusCircle
-                    size={26}
-                    className={"text-slate-600 rotate-45 hover:text-slate-800 transition-all duration-300 self-center cursor-pointer"}
-                    onClick={() => setIsModalOpen(!isModalOpen)}
-                />
-                <h1 className=' font-semibold text-lg mb-4 text-slate-500'>Add a service to appointment</h1>
-                <Formik
-                    initialValues={initialValues}
-                    validationSchema={formSchema}
-                    onSubmit={async (values) => {
-                        addServiceMutation.mutateAsync(Number(values.serviceLoad));
-                        setTimeout(() => {
-                            setIsModalOpen(false);
-                        }, 500);
-
-                    }}
-                >
-
-                    {({ errors, touched }) => (
-
-                        <Form>
-                            <div>Available Services</div>
-
-                            <InputAs
-                                as={'select'}
-                                name={'serviceLoad'}
-                                errMessage={errors.serviceLoad}
-                                error={errors.serviceLoad}
-                                touch={errors.serviceLoad}
-                            >
-                                <option selected disabled></option>
-
-                                {
-                                    serviceList.map((serviceItem: IService) => <option
-                                        key={serviceItem.service_id}
-                                        value={serviceItem.service_id}> {serviceItem.name} | ${serviceItem.price}
-                                    </option>)
-                                }
-
-
-
-                            </InputAs>
-
-                            <Button title={'Save'} type={'submit'} className={'w-full'} />
-
-                        </Form>
-                    )}
-                </Formik>
-
-                {/* formik ends */}
-            </Modal>
-            {/* Modal end */}
         </div>
     )
 }
